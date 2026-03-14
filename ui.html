@@ -736,6 +736,39 @@
         border-top: 1px solid rgba(0, 0, 0, 0.06);
         margin-top: auto;
         flex-shrink: 0;
+        position: relative;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+
+      .footer--static {
+        position: relative;
+      }
+
+      .footer--floating {
+        position: sticky;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 3;
+      }
+
+      .footer--hidden {
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+      }
+
+      .footer--visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      /* Enhanced appearance when floating and visible over the grid */
+      .footer--floating.footer--visible {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
       }
 
       .footer-content {
@@ -850,6 +883,8 @@
       const elCategoryList = document.getElementById("category-list");
       const elCategoryListItems = document.getElementById("category-list-items");
       const elGrid = document.getElementById("grid");
+      const elContent = document.querySelector(".content");
+      const elFooter = document.querySelector(".footer");
       
       let currentSize = 16;
       const sizeOptions = [16, 20, 24, 32, 40];
@@ -858,6 +893,13 @@
       let isCategoryListOpen = false;
       let hasSelection = false;
       const svgCache = new Map();
+      
+      // Footer scroll / visibility state
+      let lastScrollTop = 0;
+      let hideFooterTimeoutId = null;
+      let footerVisible = false;
+      let isScrollable = false;
+      let shouldResetScrollOnNextRender = false;
       
       // Track selected icon in Figma
       let selectedIconName = null;
@@ -1059,6 +1101,8 @@
         hasSelection = true;
         // Update style icons when category changes
         updateStyleIcons();
+        // When changing category, reset scroll position to top on next render
+        shouldResetScrollOnNextRender = true;
         render();
       }
 
@@ -1109,6 +1153,11 @@
           selectCategory(button.dataset.value);
         }
       });
+
+      // Content scroll listener for smart footer behavior
+      if (elContent) {
+        elContent.addEventListener('scroll', onContentScroll);
+      }
 
       function normalizeQuery(s) {
         return (s || "").trim().toLowerCase();
@@ -1194,9 +1243,93 @@
         updateStyleIcons();
       }
 
+      function updateScrollableState() {
+        if (!elContent || !elFooter) return;
+        
+        const scrollHeight = elContent.scrollHeight;
+        const clientHeight = elContent.clientHeight;
+        const nextIsScrollable = scrollHeight > clientHeight + 1;
+        isScrollable = nextIsScrollable;
+        
+        if (!isScrollable) {
+          // Short list: footer is static and always visible
+          elFooter.classList.add("footer--static");
+          elFooter.classList.remove("footer--floating", "footer--hidden");
+          elFooter.classList.add("footer--visible");
+          footerVisible = true;
+          if (hideFooterTimeoutId !== null) {
+            clearTimeout(hideFooterTimeoutId);
+            hideFooterTimeoutId = null;
+          }
+        } else {
+          // Scrollable list: enable floating behavior, start hidden until user scrolls
+          elFooter.classList.remove("footer--static");
+          elFooter.classList.add("footer--floating");
+          elFooter.classList.add("footer--hidden");
+          elFooter.classList.remove("footer--visible");
+          footerVisible = false;
+          lastScrollTop = elContent.scrollTop || 0;
+        }
+      }
+
+      function showFooter() {
+        if (!elFooter || footerVisible === true || !isScrollable) return;
+        elFooter.classList.add("footer--visible");
+        elFooter.classList.remove("footer--hidden");
+        footerVisible = true;
+      }
+
+      function hideFooter() {
+        if (!elFooter || footerVisible === false) return;
+        elFooter.classList.add("footer--hidden");
+        elFooter.classList.remove("footer--visible");
+        footerVisible = false;
+        if (elContent) {
+          lastScrollTop = elContent.scrollTop || 0;
+        }
+      }
+
+      function onContentScroll() {
+        if (!elContent || !isScrollable || !elFooter) return;
+        
+        const currentScrollTop = elContent.scrollTop || 0;
+        const delta = Math.abs(currentScrollTop - lastScrollTop);
+        const scrollHeight = elContent.scrollHeight;
+        const clientHeight = elContent.clientHeight;
+        const atBottom = scrollHeight - (currentScrollTop + clientHeight) <= 1;
+        
+        // If user is at the bottom of the list, footer should stay visible
+        if (atBottom) {
+          showFooter();
+          if (hideFooterTimeoutId !== null) {
+            clearTimeout(hideFooterTimeoutId);
+            hideFooterTimeoutId = null;
+          }
+          // Treat this as the new resting position
+          lastScrollTop = currentScrollTop;
+          return;
+        }
+        
+        // If user has moved at least 40px from the last resting position, show footer
+        if (delta >= 40 && !footerVisible) {
+          showFooter();
+        }
+        
+        // While scrolling and footer is visible, reset the inactivity timer
+        if (footerVisible) {
+          if (hideFooterTimeoutId !== null) {
+            clearTimeout(hideFooterTimeoutId);
+          }
+          hideFooterTimeoutId = setTimeout(() => {
+            hideFooter();
+            hideFooterTimeoutId = null;
+          }, 5000);
+        }
+      }
+
       function initFooter() {
         const year = new Date().getFullYear();
-        const version = "1.5.1";
+        const version = "1.6.0";
         const footerLeft = document.getElementById("footer-left");
         const footerRight = document.getElementById("footer-right");
         
@@ -1394,7 +1527,7 @@
 
         // Save scroll position before clearing
         const contentElement = document.querySelector('.content');
-        const scrollTop = contentElement ? contentElement.scrollTop : 0;
+        const previousScrollTop = contentElement ? contentElement.scrollTop : 0;
 
         // Clean up existing observer
         if (iconObserver) {
@@ -1493,7 +1626,15 @@
         // Restore scroll position after DOM is updated
         if (contentElement) {
           requestAnimationFrame(() => {
-            contentElement.scrollTop = scrollTop;
+            if (shouldResetScrollOnNextRender) {
+              contentElement.scrollTop = 0;
+              lastScrollTop = 0;
+              shouldResetScrollOnNextRender = false;
+            } else {
+              contentElement.scrollTop = previousScrollTop;
+            }
+            // After layout settles, update footer scrollable state
+            updateScrollableState();
           });
         }
       }
@@ -1506,16 +1647,50 @@
           // Figma plugins send messages via event.data.pluginMessage
           const msg = event.data?.pluginMessage;
           if (!msg) return;
-          
+
           // Debug: log received messages (remove in production if needed)
           console.log("UI received message:", msg.type, msg);
-          
+
           if (msg.type === "ICON_SELECTED") {
             selectedIconName = msg.payload?.iconName || null;
             selectedIconNodeId = msg.payload?.nodeId || null;
-            
+
             console.log("Icon selected in UI:", selectedIconName, "nodeId:", selectedIconNodeId);
-            
+
+            // When a category is selected, first check if it already contains this icon.
+            // If not, switch to the category that owns the icon.
+            if (selectedIconName) {
+              const iconMeta = ICONS.find((icon) => icon.id === selectedIconName);
+              const iconCategory = iconMeta?.category || null;
+
+              if (iconCategory) {
+                const isInCurrentCategory =
+                  currentCategory === "all" || currentCategory === iconCategory;
+
+                if (!isInCurrentCategory) {
+                  // Switch to the category that contains this icon
+                  currentCategory = iconCategory;
+                  updateCategoryDisplay();
+
+                  // Update active state in the category dropdown without toggling it
+                  const buttons = elCategoryListItems.querySelectorAll(".category-list-button");
+                  buttons.forEach((btn) => {
+                    if (btn.dataset.value === currentCategory) {
+                      btn.classList.add("active");
+                    } else {
+                      btn.classList.remove("active");
+                    }
+                  });
+
+                  // Keep style icons in sync with the new category
+                  updateStyleIcons();
+
+                  // Re-render grid so the icon is visible in its category
+                  render();
+                }
+              }
+            }
+
             // Update selected state without re-rendering to preserve scroll position
             const cards = elGrid.querySelectorAll('.card');
             cards.forEach(card => {
@@ -1544,6 +1719,7 @@
         updateGridColumns();
         await loadUIIcons();
         initFooter();
+        updateScrollableState();
         
         render();
         
