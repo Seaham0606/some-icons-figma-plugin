@@ -1,0 +1,1570 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        font-family: 'Figtree', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-size: 12px;
+        color: #111;
+        
+        /* Color variables matching website */
+        --color-white: #FFFFFF;
+        --color-gray-800: #262626;
+        --color-gray-100: #E6E6E6;
+        --color-gray-50: #F2F2F2;
+        --color-gray-25: #F9F9F9;
+        --color-gray-300: #B3B3B3;
+        --color-gray-700: #333333;
+        --color-gray-600: #4D4D4D;
+        --color-gray-850: #1A1A1A;
+        --color-blue-400: rgb(128, 194, 255);
+        --color-black-alpha-25: rgba(0, 0, 0, 0.025);
+        --color-black-alpha-50: rgba(0, 0, 0, 0.05);
+        --color-black-alpha-100: rgba(0, 0, 0, 0.1);
+        --color-white-alpha-25: rgba(255, 255, 255, 0.025);
+        --color-white-alpha-100: rgba(255, 255, 255, 0.1);
+        
+        /* Input colors */
+        --color-input-bg: var(--color-white);
+        --color-input-stroke: var(--color-gray-50);
+        --color-input-stroke-hover: var(--color-gray-100);
+        --color-input-stroke-typing: var(--color-blue-400);
+        --color-input-secondary-bg-hover: var(--color-gray-25);
+        --color-text-primary: var(--color-gray-800);
+        --color-text-tertiary: var(--color-gray-300);
+        --color-text-secondary-hover: var(--color-gray-600);
+        
+        /* Segmented button colors */
+        --color-seg-button-bg: var(--color-gray-100);
+        --color-text-primary-inverted: var(--color-gray-800);
+        --color-seg-button-stroke: var(--color-black-alpha-25);
+        
+        /* Divider colors */
+        --color-divider-stroke: var(--color-black-alpha-100);
+        
+        /* Background */
+        --color-background-secondary: var(--color-gray-25);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        background: #fff;
+        overflow: hidden;
+      }
+
+      /* App shell */
+      .app {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+      }
+
+      /* Top function area (fixed height, no scroll) */
+      .topbar {
+        flex-shrink: 0;
+        padding: 12px;
+        background: var(--color-background-secondary);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        z-index: 2;
+      }
+
+      .search-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .search-row .search-wrapper {
+        flex: 1;
+        min-width: 0;
+      }
+
+      /* Controls row for style and category */
+      .controls-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 8px;
+      }
+
+      /* Style select wrapper - similar to category dropdown but fixed width */
+      .style-select-wrapper {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        max-width: 120px;
+      }
+
+      .style-segment-icon {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: inherit;
+      }
+
+      .style-select-button {
+        height: 44px;
+        width: 100%;
+        border-radius: 10px;
+        background: var(--color-input-bg);
+        border: 1px solid var(--color-input-stroke);
+        padding: 0 40px 0 12px;
+        text-align: left;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 100%;
+        font-weight: 500;
+        color: var(--color-text-primary);
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+        outline: none;
+      }
+
+      .style-select-button:hover {
+        border-color: var(--color-input-stroke-hover);
+      }
+
+      .style-select-button:focus {
+        border-color: var(--color-input-stroke-typing);
+      }
+
+      .style-select-text {
+        flex: 1;
+        transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+      }
+
+      .style-select-arrow {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        color: var(--color-text-tertiary);
+        transition: color 0.2s;
+      }
+      
+      .style-select-button:hover .style-select-arrow {
+        color: var(--color-text-tertiary);
+      }
+
+      /* Style list dropdown */
+      .style-list {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        width: 100%;
+        max-height: 320px;
+        overflow-y: auto;
+        border-radius: 10px;
+        border: 1px solid var(--color-input-stroke);
+        background: var(--color-input-bg);
+        padding: 4px;
+        z-index: 50;
+        transition: border-color 0.2s;
+        box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07),
+                    0px 42px 33px 0px rgba(0, 0, 0, 0.05),
+                    0px 23px 18px 0px rgba(0, 0, 0, 0.045),
+                    0px 13px 10px 0px rgba(0, 0, 0, 0.035),
+                    0px 7px 6px 0px rgba(0, 0, 0, 0.04),
+                    0px 4px 2px 0px rgba(0, 0, 0, 0.02);
+        display: none;
+      }
+
+      .style-list.open {
+        display: block;
+      }
+
+      .style-list:hover {
+        border-color: var(--color-input-stroke-hover);
+      }
+
+      .style-list-items {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        width: 100%;
+      }
+
+      .style-list-item {
+        width: 100%;
+        flex: none;
+        height: 44px;
+      }
+
+      .style-list-button {
+        width: 100%;
+        height: 100%;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        padding: 0 12px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 100%;
+        font-weight: 400;
+        color: var(--color-text-tertiary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    color 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    box-shadow 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    transform 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    font-weight 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+        will-change: background-color, color, box-shadow;
+        text-align: center;
+        outline: none;
+      }
+
+      .style-list-button:active {
+        transform: scale(0.98);
+      }
+
+      .style-list-button.active {
+        background: var(--color-seg-button-bg);
+        color: var(--color-text-primary-inverted);
+        font-weight: 600;
+        box-shadow: inset 0 0 0 1px var(--color-seg-button-stroke);
+      }
+
+      .style-list-button:hover:not(.active) {
+        background: var(--color-input-secondary-bg-hover);
+        color: var(--color-text-secondary-hover);
+      }
+
+      /* Size select wrapper */
+      .size-select-wrapper {
+        position: relative;
+        max-width: 120px;
+        width: 100%;
+        flex-shrink: 0;
+      }
+
+      .size-control {
+        height: 44px;
+        width: 100%;
+        border-radius: 10px;
+        background: var(--color-input-bg);
+        border: 1px solid var(--color-input-stroke);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 4px;
+        gap: 4px;
+        transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+      }
+
+      .size-control:hover {
+        border-color: var(--color-input-stroke-hover);
+      }
+
+      .size-control:focus-within {
+        border-color: var(--color-input-stroke-typing);
+      }
+
+      .size-control-button {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-tertiary);
+        transition: background-color 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    color 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    transform 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+        will-change: background-color, color;
+        outline: none;
+        flex-shrink: 0;
+      }
+
+      .size-control-button:active {
+        transform: scale(0.98);
+      }
+
+      .size-control-button:hover {
+        background: var(--color-input-secondary-bg-hover);
+        color: var(--color-text-secondary-hover);
+      }
+
+      .size-control-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .size-control-button:disabled:hover {
+        background: transparent;
+        color: var(--color-text-tertiary);
+      }
+
+      .size-control-icon {
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: inherit;
+      }
+
+      .size-control-text {
+        flex: 1;
+        text-align: center;
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 100%;
+        font-weight: 500;
+        color: var(--color-text-primary);
+        transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+        min-width: 0;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .controls-row .category-select-wrapper {
+        flex: 1;
+        min-width: 0;
+      }
+
+      /* Search wrapper - matching Input component */
+      .search-wrapper {
+        position: relative;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        height: 44px;
+        min-width: 0;
+        border-radius: 10px;
+        background: var(--color-input-bg);
+        border: 1px solid var(--color-input-stroke);
+        padding: 0 12px 0 12px;
+        transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+      }
+
+      .search-wrapper:hover {
+        border-color: var(--color-input-stroke-hover);
+      }
+
+      .search-wrapper:focus-within {
+        border-color: var(--color-input-stroke-typing);
+      }
+
+      .search-wrapper .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-tertiary);
+      }
+
+      .search-wrapper input {
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        padding: 0 0 0 28px;
+        border: none;
+        background: transparent;
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 100%;
+        font-weight: 400;
+        color: var(--color-text-primary);
+        outline: none;
+      }
+
+      .search-wrapper input::placeholder {
+        color: var(--color-text-tertiary);
+        font-weight: 400;
+      }
+
+      /* Segmented control - matching SegmentedControl component */
+      .segmented-control {
+        display: flex;
+        width: 100%;
+        height: 44px;
+        border-radius: 10px;
+        background: var(--color-input-bg);
+        border: 1px solid var(--color-input-stroke);
+        padding: 4px;
+        gap: 8px;
+        align-items: center;
+        transition: border-color 0.2s;
+      }
+
+      .segmented-control:hover {
+        border-color: var(--color-input-stroke-hover);
+      }
+
+      .segment-button {
+        flex: 1;
+        height: 100%;
+        padding: 0 8px;
+        border: none;
+        background: transparent;
+        color: var(--color-text-tertiary);
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 100%;
+        font-weight: 400;
+        cursor: pointer;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: background-color 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    color 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    box-shadow 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    transform 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    font-weight 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    border-color 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+        will-change: background-color, color, box-shadow, border-color;
+      }
+
+      .segment-button:not(.active) {
+        font-weight: 400;
+      }
+
+      .segment-button:active {
+        transform: scale(0.98);
+      }
+
+      .segment-button:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: -4.5px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1px;
+        height: 12px;
+        background: var(--color-divider-stroke);
+        border-radius: 0.5px;
+        z-index: 2;
+      }
+
+      .segment-button.active {
+        background: var(--color-seg-button-bg);
+        color: var(--color-text-primary-inverted);
+        font-weight: 600;
+        box-shadow: inset 0 0 0 1px var(--color-seg-button-stroke);
+        z-index: 1;
+      }
+
+      .segment-button:hover:not(.active) {
+        background: var(--color-input-secondary-bg-hover);
+        color: var(--color-text-secondary-hover);
+      }
+
+      .segment-button.active:hover {
+        background: var(--color-seg-button-bg);
+        opacity: 0.9;
+      }
+
+      /* Category select wrapper - matching CategorySelect component */
+      .category-select-wrapper {
+        position: relative;
+        width: 100%;
+      }
+
+      .category-select-button {
+        width: 100%;
+        height: 44px;
+        min-width: 0;
+        border-radius: 10px;
+        background: var(--color-input-bg);
+        border: 1px solid var(--color-input-stroke);
+        padding: 0 40px 0 12px;
+        text-align: left;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 100%;
+        font-weight: 500;
+        color: var(--color-text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+        outline: none;
+      }
+
+
+      .category-select-button:hover {
+        border-color: var(--color-input-stroke-hover);
+      }
+
+      .category-select-button:focus {
+        border-color: var(--color-input-stroke-typing);
+      }
+
+      .category-select-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-tertiary);
+        transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+      }
+
+      .category-select-text {
+        flex: 1;
+        transition: all 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+      }
+
+      .category-select-arrow {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        color: var(--color-text-tertiary);
+      }
+
+      /* Category list dropdown - matching CategoryList component */
+      .category-list {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        width: 100%;
+        max-height: 320px;
+        overflow-y: auto;
+        border-radius: 10px;
+        border: 1px solid var(--color-input-stroke);
+        background: var(--color-input-bg);
+        padding: 4px;
+        z-index: 50;
+        transition: border-color 0.2s;
+        box-shadow: 0px 100px 80px 0px rgba(0, 0, 0, 0.07),
+                    0px 42px 33px 0px rgba(0, 0, 0, 0.05),
+                    0px 23px 18px 0px rgba(0, 0, 0, 0.045),
+                    0px 13px 10px 0px rgba(0, 0, 0, 0.035),
+                    0px 7px 6px 0px rgba(0, 0, 0, 0.04),
+                    0px 4px 2px 0px rgba(0, 0, 0, 0.02);
+        display: none;
+      }
+
+      .category-list.open {
+        display: block;
+      }
+
+      .category-list:hover {
+        border-color: var(--color-input-stroke-hover);
+      }
+
+      .category-list-items {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        width: 100%;
+      }
+
+      .category-list-item {
+        width: 100%;
+        flex: none;
+        height: 44px;
+      }
+
+      .category-list-button {
+        width: 100%;
+        height: 100%;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        padding: 0 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 100%;
+        font-weight: 400;
+        color: var(--color-text-tertiary);
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 8px;
+        transition: background-color 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    color 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    box-shadow 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    transform 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    font-weight 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+        will-change: background-color, color, box-shadow;
+        text-align: left;
+        outline: none;
+      }
+
+      .category-list-button:active {
+        transform: scale(0.98);
+      }
+
+      .category-list-button.active {
+        background: var(--color-seg-button-bg);
+        color: var(--color-text-primary-inverted);
+        font-weight: 600;
+        box-shadow: inset 0 0 0 1px var(--color-seg-button-stroke);
+      }
+
+      .category-list-button:hover:not(.active) {
+        background: var(--color-input-secondary-bg-hover);
+        color: var(--color-text-secondary-hover);
+      }
+
+      .category-list-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: inherit;
+        transition: opacity 0.5s cubic-bezier(0.33, 1, 0.68, 1),
+                    color 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+      }
+
+      .category-list-divider {
+        height: 1px;
+        margin: 0 6px;
+        border-radius: 9999px;
+        background: var(--color-divider-stroke);
+      }
+
+      /* Scroll area (ONLY this scrolls) */
+      .content {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .grid {
+        padding: 12px;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 2px;
+      }
+      
+      /* Grid columns will be updated dynamically via JavaScript */
+
+      /* Icon card */
+      .card {
+        aspect-ratio: 1 / 1;
+        border-radius: 10px;
+        background: #fff;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        user-select: none;
+        overflow: hidden;
+      }
+
+      .card:hover {
+        background: rgba(0, 0, 0, 0.03);
+      }
+
+      .card.selected {
+        background: rgba(0, 0, 0, 0.03);
+      }
+
+      .iconBox {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+      }
+
+      .iconBox img {
+        width: var(--icon-size, 32px);
+        height: var(--icon-size, 32px);
+        object-fit: contain;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .muted {
+        color: #b1b1b1;
+        font-size: 12px;
+      }
+
+      /* Footer */
+      .footer {
+        padding: 12px;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        margin-top: auto;
+        flex-shrink: 0;
+      }
+
+      .footer-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #777;
+      }
+
+      .footer-left {
+        display: flex;
+        align-items: center;
+      }
+
+      .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .footer-content a {
+        color: #5DB0FC;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .footer-content a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <div class="search-row">
+          <div class="search-wrapper">
+            <div class="search-icon" id="search-icon"></div>
+            <input id="search" placeholder="Search icons..." />
+          </div>
+
+          <div class="size-select-wrapper">
+            <div class="size-control">
+              <button type="button" class="size-control-button" id="size-decrease-button">
+                <div class="size-control-icon" id="size-decrease-icon"></div>
+              </button>
+              <span class="size-control-text" id="size-text">16</span>
+              <button type="button" class="size-control-button" id="size-increase-button">
+                <div class="size-control-icon" id="size-increase-icon"></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls-row">
+          <div class="category-select-wrapper">
+            <button type="button" class="category-select-button" id="category-button">
+              <div class="category-select-icon" id="category-icon"></div>
+              <span class="category-select-text" id="category-text">All icons</span>
+              <div class="category-select-arrow" id="category-arrow"></div>
+            </button>
+            <div class="category-list" id="category-list">
+              <div class="category-list-items" id="category-list-items"></div>
+            </div>
+          </div>
+
+          <div class="style-select-wrapper">
+            <div class="segmented-control" id="style-segmented-control">
+              <button type="button" class="segment-button" id="style-outline-button" data-value="outline">
+                <div class="style-segment-icon" id="style-outline-icon"></div>
+              </button>
+              <button type="button" class="segment-button" id="style-filled-button" data-value="filled">
+                <div class="style-segment-icon" id="style-filled-icon"></div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div id="grid" class="grid"></div>
+        <footer class="footer">
+          <div class="footer-content" id="footer-content">
+            <div class="footer-left" id="footer-left"></div>
+            <div class="footer-right" id="footer-right"></div>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      const BASE_URL =
+        "https://raw.githubusercontent.com/Seaham0606/some-icons-cdn/main/";
+
+      let ICONS = [];
+
+      const elSearch = document.getElementById("search");
+      const elSizeText = document.getElementById("size-text");
+      const elSizeDecreaseButton = document.getElementById("size-decrease-button");
+      const elSizeIncreaseButton = document.getElementById("size-increase-button");
+      const elSizeDecreaseIcon = document.getElementById("size-decrease-icon");
+      const elSizeIncreaseIcon = document.getElementById("size-increase-icon");
+      const elStyleOutlineButton = document.getElementById("style-outline-button");
+      const elStyleFilledButton = document.getElementById("style-filled-button");
+      const elStyleOutlineIcon = document.getElementById("style-outline-icon");
+      const elStyleFilledIcon = document.getElementById("style-filled-icon");
+      const elCategoryButton = document.getElementById("category-button");
+      const elCategoryText = document.getElementById("category-text");
+      const elCategoryIcon = document.getElementById("category-icon");
+      const elCategoryArrow = document.getElementById("category-arrow");
+      const elCategoryList = document.getElementById("category-list");
+      const elCategoryListItems = document.getElementById("category-list-items");
+      const elGrid = document.getElementById("grid");
+      
+      let currentSize = 16;
+      const sizeOptions = [16, 20, 24, 32, 40];
+      let currentStyle = "outline";
+      let currentCategory = "all";
+      let isCategoryListOpen = false;
+      let hasSelection = false;
+      const svgCache = new Map();
+      
+      // Track selected icon in Figma
+      let selectedIconName = null;
+      let selectedIconNodeId = null;
+      
+      // Lazy loading: Intersection Observer
+      let iconObserver = null;
+      const loadedIcons = new Set(); // Track which icons have been loaded
+
+      // Category to icon mapping
+      const CATEGORY_ICONS = {
+        all: 'interface-grid',
+        arrow: 'arrow-up-right-circle',
+        commerce: 'commerce-shopping-bag-alt',
+        chat: 'chat-message',
+        content: 'content-book-alt',
+        device: 'device-phone',
+        file: 'file-file',
+        formatting: 'formatting-pen-alt',
+        gesture: 'gesture-point-4-finger-alt',
+        interface: 'interface-home',
+        map: 'map-map-alt',
+        media: 'media-play',
+        symbol: 'symbol-shape-spade',
+        time: 'time-clock-05',
+        weather: 'weather-cloud',
+      };
+
+      function getCategoryIcon(category) {
+        return CATEGORY_ICONS[category] || 'symbol-information-circle';
+      }
+
+      function uniq(arr) {
+        return Array.from(new Set(arr)).sort();
+      }
+
+      async function loadIndex() {
+        const res = await fetch(`${BASE_URL}index.json`, { cache: "no-store" });
+        const data = await res.json();
+        ICONS = data.icons || [];
+      }
+
+      function buildCategories() {
+        const cats = uniq(
+          ICONS.map((i) => i.category).filter(Boolean)
+        );
+        
+        // Sort categories: "general" first, then alphabetical
+        const sortedCats = [...cats];
+        const generalIndex = sortedCats.indexOf("general");
+        if (generalIndex > -1) {
+          sortedCats.splice(generalIndex, 1);
+          sortedCats.unshift("general");
+        }
+        
+        const allCategories = ['all', ...sortedCats];
+        
+        // Build category list HTML
+        elCategoryListItems.innerHTML = '';
+        allCategories.forEach((cat, index) => {
+          const item = document.createElement('div');
+          item.className = 'category-list-item';
+          
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'category-list-button';
+          if (cat === currentCategory) {
+            button.classList.add('active');
+          }
+          button.dataset.value = cat;
+          
+          const icon = document.createElement('div');
+          icon.className = 'category-list-icon';
+          icon.id = `category-list-icon-${cat}`;
+          
+          const text = document.createElement('span');
+          text.textContent = cat === 'all' ? 'All icons' : cat.charAt(0).toUpperCase() + cat.slice(1);
+          
+          button.appendChild(icon);
+          button.appendChild(text);
+          item.appendChild(button);
+          
+          elCategoryListItems.appendChild(item);
+          
+          // Add divider after "all"
+          if (index === 0) {
+            const divider = document.createElement('div');
+            divider.className = 'category-list-divider';
+            elCategoryListItems.appendChild(divider);
+          }
+          
+          // Load icon
+          loadUIIcon(getCategoryIcon(cat), `category-list-icon-${cat}`, 'outline');
+        });
+      }
+
+      function updateSizeButtons() {
+        const currentIndex = sizeOptions.indexOf(currentSize);
+        elSizeDecreaseButton.disabled = currentIndex === 0;
+        elSizeIncreaseButton.disabled = currentIndex === sizeOptions.length - 1;
+      }
+
+      function updateStyleIcons() {
+        const categoryIcon = getCategoryIcon(currentCategory);
+        loadUIIcon(categoryIcon, 'style-outline-icon', 'outline');
+        loadUIIcon(categoryIcon, 'style-filled-icon', 'filled');
+      }
+
+      function updateSizeDisplay() {
+        elSizeText.textContent = currentSize.toString();
+        updateSizeButtons();
+      }
+
+      function decreaseSize() {
+        const currentIndex = sizeOptions.indexOf(currentSize);
+        if (currentIndex > 0) {
+          selectSize(sizeOptions[currentIndex - 1]);
+        }
+      }
+
+      function increaseSize() {
+        const currentIndex = sizeOptions.indexOf(currentSize);
+        if (currentIndex < sizeOptions.length - 1) {
+          selectSize(sizeOptions[currentIndex + 1]);
+        }
+      }
+
+      function updateGridColumns() {
+        // Fixed grid: always use 5 columns max, icons always display at 32px
+        const columns = 5;
+        elGrid.style.gridTemplateColumns = `repeat(${columns}, minmax(0, 1fr))`;
+        // Set CSS variable for icon size - always 32px in preview
+        elGrid.style.setProperty('--icon-size', '32px');
+        // Force a reflow to ensure the change is applied
+        void elGrid.offsetWidth;
+      }
+
+      function selectSize(size) {
+        currentSize = parseInt(size);
+        updateSizeDisplay();
+        // Don't update grid columns - keep preview at fixed size
+        render();
+      }
+
+      function updateStyleDisplay() {
+        // Update active state in segmented buttons
+        elStyleOutlineButton.classList.toggle('active', currentStyle === 'outline');
+        elStyleFilledButton.classList.toggle('active', currentStyle === 'filled');
+      }
+
+      function selectStyle(style) {
+        currentStyle = style;
+        updateStyleDisplay();
+        render();
+      }
+
+      function updateCategoryDisplay() {
+        const label = currentCategory === 'all' ? 'All icons' : currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
+        elCategoryText.textContent = label;
+        loadUIIcon(getCategoryIcon(currentCategory), 'category-icon', 'outline');
+      }
+
+      function toggleCategoryList() {
+        isCategoryListOpen = !isCategoryListOpen;
+        if (isCategoryListOpen) {
+          elCategoryList.classList.add('open');
+          loadUIIcon('arrow-up-triangle', 'category-arrow', 'filled');
+          hasSelection = false;
+          
+          // Scroll selected category into view
+          setTimeout(() => {
+            const selectedButton = elCategoryListItems.querySelector(`[data-value="${currentCategory}"]`);
+            if (selectedButton && elCategoryList) {
+              const selectedOffsetTop = selectedButton.offsetTop;
+              elCategoryList.scrollTo({
+                top: selectedOffsetTop - 4,
+                behavior: 'smooth'
+              });
+            }
+          }, 0);
+        } else {
+          elCategoryList.classList.remove('open');
+          loadUIIcon('arrow-down-triangle', 'category-arrow', 'filled');
+        }
+      }
+
+      function selectCategory(category) {
+        currentCategory = category;
+        updateCategoryDisplay();
+        // Update active state in dropdown
+        const buttons = elCategoryListItems.querySelectorAll('.category-list-button');
+        buttons.forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.dataset.value === category) {
+            btn.classList.add('active');
+          }
+        });
+        toggleCategoryList();
+        hasSelection = true;
+        // Update style icons when category changes
+        updateStyleIcons();
+        render();
+      }
+
+      // Handle click outside
+      document.addEventListener('mousedown', (event) => {
+        // Handle category list
+        if (isCategoryListOpen && !elCategoryButton.contains(event.target) && !elCategoryList.contains(event.target)) {
+          if (hasSelection) {
+            toggleCategoryList();
+          }
+        }
+      });
+
+      // Handle mouse leave
+      elCategoryList.addEventListener('mouseleave', () => {
+        if (hasSelection && isCategoryListOpen) {
+          toggleCategoryList();
+        }
+      });
+
+      // Size control buttons
+      elSizeDecreaseButton.addEventListener('click', () => {
+        decreaseSize();
+      });
+
+      elSizeIncreaseButton.addEventListener('click', () => {
+        increaseSize();
+      });
+
+      // Style segmented button clicks
+      elStyleOutlineButton.addEventListener('click', () => {
+        selectStyle('outline');
+      });
+
+      elStyleFilledButton.addEventListener('click', () => {
+        selectStyle('filled');
+      });
+
+      // Category button click
+      elCategoryButton.addEventListener('click', () => {
+        toggleCategoryList();
+      });
+
+      // Category list item clicks
+      elCategoryListItems.addEventListener('click', (event) => {
+        const button = event.target.closest('.category-list-button');
+        if (button) {
+          selectCategory(button.dataset.value);
+        }
+      });
+
+      function normalizeQuery(s) {
+        return (s || "").trim().toLowerCase();
+      }
+
+      function getDerivedSortKey(iconId) {
+        if (!iconId) return "";
+        const normalized = iconId.toLowerCase();
+        const firstDashIndex = normalized.indexOf("-");
+        if (firstDashIndex === -1) return normalized;
+        return normalized.substring(firstDashIndex + 1);
+      }
+
+      function matches(icon, q) {
+        if (!q) return true;
+        return `${icon.id} ${icon.category} ${(icon.tags || []).join(" ")}`
+          .toLowerCase()
+          .includes(q);
+      }
+
+      function getSelectedStyle(icon) {
+        return currentStyle;
+      }
+
+      async function fetchSvgText(icon, style) {
+        const relPath = icon.files?.[style];
+        const key = `${style}:${relPath}`;
+        if (svgCache.has(key)) return svgCache.get(key);
+
+        const res = await fetch(`${BASE_URL}${relPath}`, { cache: "no-store" });
+        const text = await res.text();
+        svgCache.set(key, text);
+        return text;
+      }
+
+      async function loadUIIcon(iconId, containerId, style = "outline") {
+        const icon = ICONS.find((i) => i.id === iconId);
+        if (!icon || !icon.files?.[style]) return;
+
+        const svg = await fetchSvgText(icon, style);
+        let s = svg;
+        if (!/\bviewBox=/i.test(s)) {
+          s = s.replace(/<svg/i, '<svg viewBox="0 0 16 16"');
+        }
+        
+        const container = document.getElementById(containerId);
+        if (container) {
+          container.innerHTML = "";
+          
+          // For arrow icons, category icons, size control icons, and style segment icons, use inline SVG to preserve currentColor for CSS styling
+          if (containerId.includes('arrow') || containerId.includes('category-icon') || containerId.includes('category-list-icon') || containerId.includes('size-decrease-icon') || containerId.includes('size-increase-icon') || containerId.includes('style-outline-icon') || containerId.includes('style-filled-icon')) {
+            s = s.replace(/<svg/i, '<svg style="width: 100%; height: 100%;"');
+            container.innerHTML = s;
+            // Apply color via CSS - let SVG paths use currentColor naturally
+            const svgElement = container.querySelector('svg');
+            if (svgElement) {
+              svgElement.style.color = 'inherit';
+              // Don't set fill/stroke on SVG element - let paths use currentColor from their own attributes
+            }
+          } else {
+            // For other icons, use img tag with black color
+            s = s.replaceAll("currentColor", "#000000");
+            const encoded = encodeURIComponent(s)
+              .replace(/'/g, "%27")
+              .replace(/"/g, "%22");
+            const img = document.createElement("img");
+            img.src = `data:image/svg+xml,${encoded}`;
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "contain";
+            img.style.opacity = containerId === 'search-icon' ? "0.3" : "1";
+            container.appendChild(img);
+          }
+        }
+      }
+
+      async function loadUIIcons() {
+        await loadUIIcon("interface-search", "search-icon", "outline");
+        await loadUIIcon("symbol-minus", "size-decrease-icon", "outline");
+        await loadUIIcon("symbol-plus", "size-increase-icon", "outline");
+        await loadUIIcon("arrow-down-triangle", "category-arrow", "filled");
+        await loadUIIcon(getCategoryIcon(currentCategory), "category-icon", "outline");
+        updateStyleIcons();
+      }
+
+      function initFooter() {
+        const year = new Date().getFullYear();
+        const version = "1.5.1";
+        const footerLeft = document.getElementById("footer-left");
+        const footerRight = document.getElementById("footer-right");
+        
+        if (footerLeft) {
+          footerLeft.innerHTML = `© ${year} Sihan Liu`;
+        }
+        
+        if (footerRight) {
+          const versionSpan = document.createElement("span");
+          versionSpan.textContent = `v${version}`;
+          
+          const licenseLink = document.createElement("a");
+          licenseLink.href = "#";
+          licenseLink.id = "license-link";
+          licenseLink.textContent = "License";
+          licenseLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (parent && parent.postMessage) {
+              parent.postMessage(
+                {
+                  pluginMessage: {
+                    type: "OPEN_EXTERNAL",
+                    payload: { url: "https://choosealicense.com/licenses/mit/" },
+                  },
+                },
+                "*"
+              );
+            }
+          });
+          
+          const fullLibraryLink = document.createElement("a");
+          fullLibraryLink.href = "#";
+          fullLibraryLink.id = "full-library-link";
+          fullLibraryLink.textContent = "Full library";
+          fullLibraryLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (parent && parent.postMessage) {
+              parent.postMessage(
+                {
+                  pluginMessage: {
+                    type: "OPEN_EXTERNAL",
+                    payload: { url: "https://someicons.com/" },
+                  },
+                },
+                "*"
+              );
+            }
+          });
+          
+          footerRight.appendChild(versionSpan);
+          footerRight.appendChild(licenseLink);
+          footerRight.appendChild(fullLibraryLink);
+        }
+      }
+
+      // Lazy load a single icon
+      async function loadIconLazy(card, icon, style) {
+        // Check if already loaded
+        const iconKey = `${icon.id}-${style}`;
+        if (loadedIcons.has(iconKey)) {
+          return;
+        }
+        
+        const box = card.querySelector('.iconBox');
+        if (!box) return;
+        
+        // Mark as loading
+        loadedIcons.add(iconKey);
+        
+        try {
+          const svg = await fetchSvgText(icon, style);
+          let s = svg;
+          if (!/\bviewBox=/i.test(s)) {
+            s = s.replace(/<svg/i, '<svg viewBox="0 0 16 16"');
+          }
+          s = s.replaceAll("currentColor", "#111");
+          const encoded = encodeURIComponent(s)
+            .replace(/'/g, "%27")
+            .replace(/"/g, "%22");
+          const img = document.createElement("img");
+          img.src = `data:image/svg+xml,${encoded}`;
+          box.innerHTML = "";
+          box.appendChild(img);
+        } catch (error) {
+          console.error(`Error loading icon ${icon.id}:`, error);
+          box.innerHTML = `<span class="muted">!</span>`;
+        }
+      }
+      
+      // Setup Intersection Observer for lazy loading
+      function setupIconObserver() {
+        // Clean up existing observer
+        if (iconObserver) {
+          iconObserver.disconnect();
+        }
+        
+        // Create new observer with a small root margin for preloading
+        iconObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const card = entry.target;
+              const icon = card._iconData;
+              const style = card._iconStyle;
+              
+              if (icon && style) {
+                loadIconLazy(card, icon, style);
+                // Unobserve after loading to avoid re-triggering
+                iconObserver.unobserve(card);
+              }
+            }
+          });
+        }, {
+          root: document.querySelector('.content'),
+          rootMargin: '100px', // Start loading 100px before entering viewport
+          threshold: 0.01
+        });
+      }
+
+      // Scroll to icon in grid (only if not already visible)
+      function scrollToIcon(iconName) {
+        if (!iconName) return;
+        
+        // Wait a bit longer for DOM to be fully ready
+        setTimeout(() => {
+          const cards = elGrid.querySelectorAll('.card');
+          let found = false;
+          const contentElement = document.querySelector('.content');
+          
+          if (!contentElement) {
+            console.error("Content element not found for scrolling");
+            return;
+          }
+          
+          cards.forEach((card) => {
+            if (card.title === iconName) {
+              found = true;
+              // Get the card's bounding rect relative to the viewport
+              const cardRect = card.getBoundingClientRect();
+              const contentRect = contentElement.getBoundingClientRect();
+              
+              // Check if the card is already visible in the viewport
+              const cardTopInViewport = cardRect.top - contentRect.top;
+              const cardBottomInViewport = cardRect.bottom - contentRect.top;
+              const containerHeight = contentElement.clientHeight;
+              
+              // Only scroll if the card is not fully visible
+              // Card is visible if its top is above viewport bottom and its bottom is below viewport top
+              const isFullyVisible = cardTopInViewport >= 0 && cardBottomInViewport <= containerHeight;
+              
+              if (!isFullyVisible) {
+                // Card is not visible, calculate scroll to center it
+                const cardHeight = cardRect.height;
+                const desiredCardTopInViewport = containerHeight / 2 - cardHeight / 2;
+                const scrollDelta = cardTopInViewport - desiredCardTopInViewport;
+                const currentScrollTop = contentElement.scrollTop;
+                const targetScroll = currentScrollTop + scrollDelta;
+                
+                // Only scroll if the delta is significant (more than 10px) to avoid tiny jumps
+                if (Math.abs(scrollDelta) > 10) {
+                  contentElement.scrollTop = Math.max(0, targetScroll);
+                }
+              }
+              // If card is already visible, don't scroll at all
+            }
+          });
+          
+          if (!found) {
+            console.log(`Icon ${iconName} not found in current view`);
+          }
+        }, 200);
+      }
+
+      function render() {
+        const q = normalizeQuery(elSearch.value);
+
+        const filtered = ICONS.filter((icon) => {
+          if (!q && currentCategory !== "all" && icon.category !== currentCategory)
+            return false;
+          if (!icon.files?.[currentStyle])
+            return false;
+          return matches(icon, q);
+        });
+
+        const isAllIconsView = currentCategory === "all";
+        const sorted = [...filtered].sort((a, b) => {
+          if (isAllIconsView) {
+            const aSortKey = getDerivedSortKey(a.id || "");
+            const bSortKey = getDerivedSortKey(b.id || "");
+            const keyComparison = aSortKey.localeCompare(bSortKey);
+            if (keyComparison !== 0) return keyComparison;
+            return (a.id || "").localeCompare(b.id || "");
+          }
+          return (a.id || "").localeCompare(b.id || "");
+        });
+
+        // Save scroll position before clearing
+        const contentElement = document.querySelector('.content');
+        const scrollTop = contentElement ? contentElement.scrollTop : 0;
+
+        // Clean up existing observer
+        if (iconObserver) {
+          iconObserver.disconnect();
+        }
+        
+        // Clear loaded icons set when style or category changes
+        // (keep cache for same style/category to avoid re-loading)
+        loadedIcons.clear();
+
+        elGrid.innerHTML = "";
+        
+        // Update grid columns (fixed at 5 columns, 32px icons)
+        updateGridColumns();
+
+        // Setup observer for lazy loading
+        setupIconObserver();
+
+        // Create all cards as placeholders first (for layout)
+        sorted.forEach((icon) => {
+          const style = getSelectedStyle(icon);
+          const card = document.createElement("div");
+          card.className = "card";
+          card.title = icon.id;
+          
+          // Store icon data on card for lazy loading
+          card._iconData = icon;
+          card._iconStyle = style;
+          
+          // Highlight if this is the selected icon - use hover state
+          if (selectedIconName === icon.id) {
+            card.classList.add('selected');
+          }
+
+          const box = document.createElement("div");
+          box.className = "iconBox";
+          box.innerHTML = `<span class="muted">…</span>`;
+          card.appendChild(box);
+
+          // Set up click handler
+          card.onclick = async () => {
+            const svg = await fetchSvgText(icon, style);
+            
+            // Debug: log current state
+            console.log("Icon clicked:", icon.id);
+            console.log("Selected icon state:", { selectedIconName, selectedIconNodeId });
+            
+            // If there's a selected icon, replace it instead of inserting
+            if (selectedIconName && selectedIconNodeId) {
+              console.log("Attempting to replace icon:", icon.id, "with nodeId:", selectedIconNodeId);
+              if (parent && parent.postMessage) {
+                try {
+                  parent.postMessage(
+                    {
+                      pluginMessage: {
+                        type: "REPLACE_ICON",
+                        payload: { 
+                          name: icon.id, 
+                          svg, 
+                          size: currentSize,
+                          nodeId: selectedIconNodeId
+                        },
+                      },
+                    },
+                    "*"
+                  );
+                  console.log("REPLACE_ICON message sent successfully");
+                } catch (e) {
+                  console.error("Error sending REPLACE_ICON message:", e);
+                }
+              } else {
+                console.error("parent.postMessage not available for replace");
+              }
+            } else {
+              console.log("Inserting new icon (no selection):", icon.id);
+              if (parent && parent.postMessage) {
+                parent.postMessage(
+                  {
+                    pluginMessage: {
+                      type: "INSERT_ICON",
+                      payload: { name: icon.id, svg, size: currentSize },
+                    },
+                  },
+                  "*"
+                );
+              }
+            }
+          };
+
+          elGrid.appendChild(card);
+          
+          // Observe card for lazy loading
+          iconObserver.observe(card);
+        });
+        
+        // Restore scroll position after DOM is updated
+        if (contentElement) {
+          requestAnimationFrame(() => {
+            contentElement.scrollTop = scrollTop;
+          });
+        }
+      }
+
+      elSearch.oninput = render;
+
+      // Listen for messages from plugin code
+      window.onmessage = (event) => {
+        try {
+          // Figma plugins send messages via event.data.pluginMessage
+          const msg = event.data?.pluginMessage;
+          if (!msg) return;
+          
+          // Debug: log received messages (remove in production if needed)
+          console.log("UI received message:", msg.type, msg);
+          
+          if (msg.type === "ICON_SELECTED") {
+            selectedIconName = msg.payload?.iconName || null;
+            selectedIconNodeId = msg.payload?.nodeId || null;
+            
+            console.log("Icon selected in UI:", selectedIconName, "nodeId:", selectedIconNodeId);
+            
+            // Update selected state without re-rendering to preserve scroll position
+            const cards = elGrid.querySelectorAll('.card');
+            cards.forEach(card => {
+              if (card.title === selectedIconName) {
+                card.classList.add('selected');
+              } else {
+                card.classList.remove('selected');
+              }
+            });
+            
+            // Scroll to the selected icon in the list
+            if (selectedIconName) {
+              scrollToIcon(selectedIconName);
+            }
+          }
+        } catch (e) {
+          console.error("Error handling message from plugin:", e);
+        }
+      };
+
+      (async () => {
+        await loadIndex();
+        buildCategories();
+        updateSizeDisplay();
+        updateStyleDisplay();
+        updateGridColumns();
+        await loadUIIcons();
+        initFooter();
+        
+        render();
+        
+        // Request initial selection check after UI is ready
+        // Use setTimeout to ensure render completes first
+        setTimeout(() => {
+          if (parent && parent.postMessage) {
+            console.log("UI sending CHECK_SELECTION message");
+            parent.postMessage(
+              {
+                pluginMessage: {
+                  type: "CHECK_SELECTION",
+                },
+              },
+              "*"
+            );
+          } else {
+            console.error("parent.postMessage not available");
+          }
+        }, 100);
+      })();
+    </script>
+  </body>
+</html>

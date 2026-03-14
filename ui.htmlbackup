@@ -1,0 +1,647 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/colors.css" />
+    <style>
+      :root {
+        font-family: 'Figtree', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-size: 12px;
+        color: #111;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        background: #fff;
+        overflow: hidden; /* important */
+      }
+
+      /* App shell */
+      .app {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+      }
+
+      /* Unified Input Controls */
+      input,
+      select {
+        /* Base styles - shared across all inputs */
+        height: 44px;
+        border: none;
+        border-radius: 10px;
+        background: var(--color-background-weak, rgba(0, 0, 0, 0.05));
+        font: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--color-text-primary, #111);
+      }
+
+      input::placeholder {
+        color: var(--color-item-tertiary, #b3b3b3);
+      }
+
+      input:focus,
+      select:focus {
+        outline: none;
+      }
+
+      /* Input hover and focus states - inner blue border */
+      /* Exclude search input - handled by search-wrapper */
+      input:not([type="color"]):not([type="checkbox"]):not(#search):hover,
+      select:hover {
+        box-shadow: inset 0 0 0 2px var(--color-focus, rgba(0, 0, 0, 0.1));
+      }
+
+      input:not([type="color"]):not([type="checkbox"]):not(#search):focus,
+      input:not([type="color"]):not([type="checkbox"]):not(#search):focus-visible,
+      select:focus,
+      select:focus-visible {
+        box-shadow: inset 0 0 0 1.2px var(--color-focus, rgba(0, 0, 0, 0.1));
+      }
+
+      /* Search wrapper - border on entire container */
+      .search-wrapper:hover {
+        box-shadow: inset 0 0 0 2px var(--color-focus, rgba(0, 0, 0, 0.1));
+      }
+
+      .search-wrapper:focus-within {
+        box-shadow: inset 0 0 0 2px var(--color-focus, rgba(0, 0, 0, 0.1));
+      }
+
+      /* Default input/select */
+      input:not([type="color"]):not(.color-input):not(.custom-size-input),
+      select {
+        width: 100%;
+        padding: 8px;
+      }
+
+      select {
+        padding-left: 10px;
+        cursor: pointer;
+      }
+
+      /* Search field with icon */
+      .search-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 44px;
+        padding: 0 12px;
+        border: none;
+        border-radius: 10px;
+        background: var(--color-background-weak, rgba(0, 0, 0, 0.05));
+      }
+
+      .search-wrapper .search-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-item-tertiary, #b3b3b3);
+      }
+
+      /* Search input - specific customization */
+      .search-wrapper input {
+        flex: 1;
+        padding: 0;
+        margin-left: -6px;
+        border: none;
+        background: transparent;
+        height: auto;
+      }
+
+      /* Select dropdown with icon */
+      .select-wrapper {
+        position: relative;
+        margin-bottom: 8px;
+        height: 44px;
+      }
+
+      .select-wrapper:last-child {
+        margin-bottom: 0;
+      }
+
+      .select-wrapper .select-icon {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        pointer-events: none;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-item-tertiary, #b3b3b3);
+      }
+
+      /* Select with icon - specific customization */
+      .select-wrapper select {
+        padding-left: 12px;
+        padding-right: 30px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+      }
+
+      /* Top function area (fixed height, no scroll) */
+      .topbar {
+        flex-shrink: 0;
+        padding: 12px;
+        background: var(--color-background-secondary, #f9f9f9);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        z-index: 2;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      /* Scroll area (ONLY this scrolls) */
+      .content {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .grid {
+        padding: 12px;
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 2px;
+      }
+
+      /* Icon card */
+      .card {
+        aspect-ratio: 1 / 1;
+        border-radius: 10px;
+        background: #fff;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        user-select: none;
+        overflow: hidden;
+      }
+
+      .card:hover {
+        background: rgba(0, 0, 0, 0.03);
+      }
+
+      .iconBox {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+      }
+
+      .iconBox img {
+        width: 50%;
+        height: 50%;
+        object-fit: contain;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      .muted {
+        color: #b1b1b1;
+        font-size: 12px;
+      }
+
+      /* Footer */
+      .footer {
+        padding: 12px;
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+        margin-top: auto;
+        flex-shrink: 0;
+      }
+
+      .footer-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #777;
+      }
+
+      .footer-left {
+        display: flex;
+        align-items: center;
+      }
+
+      .footer-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .footer-content a {
+        color: #5DB0FC;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .footer-content a:hover {
+        text-decoration: underline;
+      }
+
+      /* Segmented control */
+      .segmented-control {
+        display: flex;
+        border: none;
+        border-radius: 10px;
+        background: var(--color-background-weak, rgba(0, 0, 0, 0.05));
+        padding: 4px;
+        gap: 8px;
+        height: 44px;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+      }
+
+      .segmented-control.segmented-control-error {
+        border: 2px solid var(--color-warning, #ff8f8f);
+        padding: 2px;
+      }
+
+      .segment-button {
+        flex: 1;
+        width: auto;
+        height: 100%;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: var(--color-item-tertiary, #b3b3b3);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s, color 0.2s;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+      }
+
+      .segment-button:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: -4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1.5px;
+        height: 12px;
+        background: var(--color-border-base, rgba(0, 0, 0, 0.05));
+        z-index: 2;
+      }
+
+      .segment-button.active {
+        background: var(--color-item-primary, #131313);
+        color: var(--color-text-primary-inverted, #e6e6e6);
+        z-index: 1;
+      }
+
+      .segment-button:hover:not(.active) {
+        background: var(--color-background-hover, rgba(0, 0, 0, 0.05));
+      }
+
+      .segment-button.active:hover {
+        background: var(--color-item-primary, #131313);
+        opacity: 0.9;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <div class="search-wrapper">
+          <div class="search-icon" id="search-icon"></div>
+          <input id="search" placeholder="Search icons" />
+        </div>
+
+        <div class="controls">
+          <div class="segmented-control" id="style-control">
+            <button class="segment-button active" data-value="outline">Outline</button>
+            <button class="segment-button" data-value="filled">Filled</button>
+          </div>
+
+          <div class="select-wrapper">
+            <select id="category">
+              <option value="all">All icons</option>
+            </select>
+            <div class="select-icon" id="category-icon"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div id="grid" class="grid"></div>
+        <footer class="footer">
+          <div class="footer-content" id="footer-content">
+            <div class="footer-left" id="footer-left"></div>
+            <div class="footer-right" id="footer-right"></div>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      const BASE_URL =
+        "https://raw.githubusercontent.com/Seaham0606/some-icons-cdn/main/";
+
+      let ICONS = [];
+
+      const elSearch = document.getElementById("search");
+      const elStyleControl = document.getElementById("style-control");
+      const elCategory = document.getElementById("category");
+      const elGrid = document.getElementById("grid");
+      
+      let currentStyle = "outline";
+
+      const INSERT_SIZE = 16;
+      const svgCache = new Map();
+
+      function uniq(arr) {
+        return Array.from(new Set(arr)).sort();
+      }
+
+      async function loadIndex() {
+        const res = await fetch(`${BASE_URL}index.json`, { cache: "no-store" });
+        const data = await res.json();
+        ICONS = data.icons || [];
+      }
+
+      function buildCategories() {
+        elCategory.innerHTML = `<option value="all">All icons</option>`;
+        const cats = uniq(
+          ICONS.map((i) => i.category).filter(Boolean)
+        );
+        
+        // Sort categories: "general" first, then alphabetical
+        const sortedCats = [...cats];
+        const generalIndex = sortedCats.indexOf("general");
+        if (generalIndex > -1) {
+          sortedCats.splice(generalIndex, 1);
+          sortedCats.unshift("general");
+        }
+        
+        sortedCats.forEach((c) => {
+          const opt = document.createElement("option");
+          opt.value = c;
+          opt.textContent = c.charAt(0).toUpperCase() + c.slice(1);
+          elCategory.appendChild(opt);
+        });
+      }
+
+      function normalizeQuery(s) {
+        return (s || "").trim().toLowerCase();
+      }
+
+      function getDerivedSortKey(iconId) {
+        if (!iconId) return "";
+        const normalized = iconId.toLowerCase();
+        const firstDashIndex = normalized.indexOf("-");
+        if (firstDashIndex === -1) return normalized;
+        return normalized.substring(firstDashIndex + 1);
+      }
+
+      function matches(icon, q) {
+        if (!q) return true;
+        return `${icon.id} ${icon.category} ${(icon.tags || []).join(" ")}`
+          .toLowerCase()
+          .includes(q);
+      }
+
+      function getSelectedStyle(icon) {
+        // With only specific styles (e.g. outline or filled), just use the selected value
+        return currentStyle;
+      }
+
+      async function fetchSvgText(icon, style) {
+        const relPath = icon.files?.[style];
+        const key = `${style}:${relPath}`;
+        if (svgCache.has(key)) return svgCache.get(key);
+
+        const res = await fetch(`${BASE_URL}${relPath}`, { cache: "no-store" });
+        const text = await res.text();
+        svgCache.set(key, text);
+        return text;
+      }
+
+      async function loadUIIcon(iconId, containerId, style = "outline") {
+        const icon = ICONS.find((i) => i.id === iconId);
+        if (!icon || !icon.files?.[style]) return;
+
+        const svg = await fetchSvgText(icon, style);
+        let s = svg;
+        if (!/\bviewBox=/i.test(s)) {
+          s = s.replace(/<svg/i, '<svg viewBox="0 0 16 16"');
+        }
+        // Replace currentColor with black, then use opacity for gray effect
+        s = s.replaceAll("currentColor", "#000000");
+        const encoded = encodeURIComponent(s)
+          .replace(/'/g, "%27")
+          .replace(/"/g, "%22");
+        
+        const container = document.getElementById(containerId);
+        if (container) {
+          container.innerHTML = "";
+          const img = document.createElement("img");
+          img.src = `data:image/svg+xml,${encoded}`;
+          img.style.width = "100%";
+          img.style.height = "100%";
+          img.style.objectFit = "contain";
+          // Use opacity for 30% gray effect
+          img.style.opacity = "0.3";
+          container.appendChild(img);
+        }
+      }
+
+      async function loadUIIcons() {
+        await loadUIIcon("general-search", "search-icon", "filled");
+        await loadUIIcon("arrow-down-triangle", "category-icon", "filled");
+      }
+
+      function initFooter() {
+        const year = new Date().getFullYear();
+        const version = "1.1.0";
+        const footerLeft = document.getElementById("footer-left");
+        const footerRight = document.getElementById("footer-right");
+        
+        if (footerLeft) {
+          footerLeft.innerHTML = `© ${year} Sihan Liu`;
+        }
+        
+        if (footerRight) {
+          const versionSpan = document.createElement("span");
+          versionSpan.textContent = `v${version}`;
+          
+          const licenseLink = document.createElement("a");
+          licenseLink.href = "#";
+          licenseLink.id = "license-link";
+          licenseLink.textContent = "License";
+          licenseLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (parent && parent.postMessage) {
+              parent.postMessage(
+                {
+                  pluginMessage: {
+                    type: "OPEN_EXTERNAL",
+                    payload: { url: "https://choosealicense.com/licenses/mit/" },
+                  },
+                },
+                "*"
+              );
+            }
+          });
+          
+          const fullLibraryLink = document.createElement("a");
+          fullLibraryLink.href = "#";
+          fullLibraryLink.id = "full-library-link";
+          fullLibraryLink.textContent = "Full library";
+          fullLibraryLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            if (parent && parent.postMessage) {
+              parent.postMessage(
+                {
+                  pluginMessage: {
+                    type: "OPEN_EXTERNAL",
+                    payload: { url: "https://someicons.com/" },
+                  },
+                },
+                "*"
+              );
+            }
+          });
+          
+          footerRight.appendChild(versionSpan);
+          footerRight.appendChild(licenseLink);
+          footerRight.appendChild(fullLibraryLink);
+        }
+      }
+
+      function render() {
+        const q = normalizeQuery(elSearch.value);
+
+        const filtered = ICONS.filter((icon) => {
+          // If searching, ignore category filter (cross-category search)
+          // Otherwise, apply category filter
+          if (!q && elCategory.value !== "all" && icon.category !== elCategory.value)
+            return false;
+          if (
+            !icon.files?.[currentStyle]
+          )
+            return false;
+          return matches(icon, q);
+        });
+
+        // Sort icons: ignore first kebab segment in "All icons" view
+        const isAllIconsView = elCategory.value === "all";
+        const sorted = [...filtered].sort((a, b) => {
+          if (isAllIconsView) {
+            const aSortKey = getDerivedSortKey(a.id || "");
+            const bSortKey = getDerivedSortKey(b.id || "");
+            const keyComparison = aSortKey.localeCompare(bSortKey);
+            if (keyComparison !== 0) return keyComparison;
+            return (a.id || "").localeCompare(b.id || "");
+          }
+          // Category-specific view: keep existing sorting by full id
+          return (a.id || "").localeCompare(b.id || "");
+        });
+
+        elGrid.innerHTML = "";
+
+        sorted.forEach((icon) => {
+          const style = getSelectedStyle(icon);
+          const card = document.createElement("div");
+          card.className = "card";
+          card.title = icon.id;
+
+          const box = document.createElement("div");
+          box.className = "iconBox";
+          box.innerHTML = `<span class="muted">…</span>`;
+          card.appendChild(box);
+
+          (async () => {
+            const svg = await fetchSvgText(icon, style);
+            let s = svg;
+            if (!/\bviewBox=/i.test(s)) {
+              s = s.replace(/<svg/i, '<svg viewBox="0 0 16 16"');
+            }
+            s = s.replaceAll("currentColor", "#111");
+            const encoded = encodeURIComponent(s)
+              .replace(/'/g, "%27")
+              .replace(/"/g, "%22");
+            const img = document.createElement("img");
+            img.src = `data:image/svg+xml,${encoded}`;
+            box.innerHTML = "";
+            box.appendChild(img);
+          })();
+
+          card.onclick = async () => {
+            const svg = await fetchSvgText(icon, style);
+            parent.postMessage(
+              {
+                pluginMessage: {
+                  type: "INSERT_ICON",
+                  payload: { name: icon.id, svg, size: INSERT_SIZE },
+                },
+              },
+              "*"
+            );
+          };
+
+          elGrid.appendChild(card);
+        });
+      }
+
+      elSearch.oninput = render;
+      
+      // Handle segmented control clicks
+      if (elStyleControl) {
+        const buttons = elStyleControl.querySelectorAll(".segment-button");
+        buttons.forEach((button) => {
+          button.addEventListener("click", () => {
+            buttons.forEach((btn) => btn.classList.remove("active"));
+            button.classList.add("active");
+            currentStyle = button.getAttribute("data-value");
+            render();
+          });
+        });
+      }
+      
+      elCategory.onchange = render;
+
+      (async () => {
+        await loadIndex();
+        buildCategories();
+        await loadUIIcons();
+        initFooter();
+        render();
+      })();
+    </script>
+  </body>
+</html>
