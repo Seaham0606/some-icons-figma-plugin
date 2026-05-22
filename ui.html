@@ -911,25 +911,25 @@
 
       // Category to icon mapping
       const CATEGORY_ICONS = {
-        all: 'interface-grid',
+        all: 'grid',
         arrow: 'arrow-up-right-circle',
-        commerce: 'commerce-shopping-bag-alt',
-        chat: 'chat-message',
-        content: 'content-book-alt',
-        device: 'device-phone',
-        file: 'file-file',
-        formatting: 'formatting-pen-alt',
-        gesture: 'gesture-point-4-finger-alt',
-        interface: 'interface-home',
-        map: 'map-map-alt',
-        media: 'media-play',
-        symbol: 'symbol-shape-spade',
-        time: 'time-clock-05',
-        weather: 'weather-cloud',
+        commerce: 'shopping-bag-alt',
+        communication: 'message',
+        content: 'book-alt',
+        device: 'phone',
+        file: 'file',
+        formatting: 'pen-alt',
+        gesture: 'point-4-finger-alt',
+        interface: 'home',
+        map: 'map-alt',
+        media: 'play',
+        symbol: 'shape-spade',
+        time: 'clock-05',
+        weather: 'cloud',
       };
 
       function getCategoryIcon(category) {
-        return CATEGORY_ICONS[category] || 'symbol-information-circle';
+        return CATEGORY_ICONS[category] || 'information-circle';
       }
 
       function uniq(arr) {
@@ -1235,9 +1235,9 @@
       }
 
       async function loadUIIcons() {
-        await loadUIIcon("interface-search", "search-icon", "outline");
-        await loadUIIcon("symbol-minus", "size-decrease-icon", "outline");
-        await loadUIIcon("symbol-plus", "size-increase-icon", "outline");
+        await loadUIIcon("search", "search-icon", "outline");
+        await loadUIIcon("minus", "size-decrease-icon", "outline");
+        await loadUIIcon("plus", "size-increase-icon", "outline");
         await loadUIIcon("arrow-down-triangle", "category-arrow", "filled");
         await loadUIIcon(getCategoryIcon(currentCategory), "category-icon", "outline");
         updateStyleIcons();
@@ -1329,12 +1329,12 @@
 
       function initFooter() {
         const year = new Date().getFullYear();
-        const version = "1.6.0";
+        const version = "1.6.1";
         const footerLeft = document.getElementById("footer-left");
         const footerRight = document.getElementById("footer-right");
         
         if (footerLeft) {
-          footerLeft.innerHTML = `© ${year} Sihan Liu`;
+          footerLeft.innerHTML = `© ${year} Some UI`;
         }
         
         if (footerRight) {
